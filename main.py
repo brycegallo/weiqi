@@ -98,7 +98,6 @@ def take_move_input(current_player):
 
 def validate_move(move_input):
     if len(move_input) != 2:
-        print("1")
         return False
     if not move_input[1].isnumeric() or int(move_input[1]) not in range(0, 10):
         print('Invalid Column')
@@ -106,16 +105,9 @@ def validate_move(move_input):
     if not move_input[0].isalpha or move_input[0].upper() not in row_alpha_dict:
         print('Invalid Row')
         return False
-
     move_row = move_input[0].upper()
     move_col = int(move_input[1])
     print(move_row, move_col)
-    if move_row not in row_alpha_dict:
-
-        return False
-    if move_col not in range(0, 10):
-
-        return False
     if board[row_alpha_dict.get(move_row)][move_col - 1] != ' ':
         print('Space already taken')
         return False
