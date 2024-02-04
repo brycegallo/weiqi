@@ -72,12 +72,15 @@ def take_move_input(current_player):
     valid_move = False
     while not exit_game and not valid_move:
         move_input = input('Enter Move: ')
-        if move_input == "exit":
+        if move_input.lower() == "exit":
             exit_game = True
             break
-        if move_input == "resign":
+        if move_input.lower() == "resign":
             resign(current_player)
             exit_game = True
+            break
+        if move_input.lower() == "pass":
+            player_1_turn = not player_1_turn
             break
         valid_move = validate_move(move_input)
         if valid_move:
