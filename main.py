@@ -85,13 +85,13 @@ def take_move_input(game):
             game.end_game = True
             break
         if move_input.lower() == "pass":
-            # swap_players(game)
             game.pass_count += 1
             if game.pass_count > 1:
                 print("Both players pass")
             break
         valid_move = validate_move(move_input)
         if valid_move:
+            game.pass_count = 0
             move_row = move_input[0].upper()
             move_col = int(move_input[1]) - 1
             if game.current_player == game.players[0]:
@@ -166,7 +166,7 @@ def check_liberties(game):
                     if piece.color == "W":
                         game.players[0].score += 1
                     board[i][j] = ' '
-    # print_liberties(board) # for testing
+    print_liberties(game)  # for testing
 
 
 def decide_winner(game):
@@ -235,8 +235,9 @@ def swap_players(game):
     game.current_player, game.waiting_player = game.waiting_player, game.current_player
 
 
-def print_liberties(board_input):
-    for i, row in enumerate(board_input):
+def print_liberties(game):
+    board = game.current_board
+    for i, row in enumerate(board):
         print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
 
 
@@ -262,6 +263,10 @@ def print_liberties(board_input):
 #                     game.players[0].score += 1
 #                 if color == "W":
 #                     game.players[1].score += 1
+
+# def print_liberties(board_input):
+#     for i, row in enumerate(board_input):
+#         print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
 
 if __name__ == '__main__':
     play_game()
