@@ -5,6 +5,7 @@ class Game:
     def __init__(self):
         self.boards = []
         self.winner = ''
+        self.pass_count = 0
 
 
 class Player:
@@ -49,7 +50,7 @@ def play_game():
     player1.name = 'player 1'
     player2.name = 'player 2'
     game.boards.append(copy.deepcopy(board))
-    while not exit_game:
+    while not exit_game and game.pass_count < 2:
         current_player = players[not player_1_turn]
         print(current_player.name + "'s turn")
         print_board(board)
@@ -81,6 +82,9 @@ def take_move_input(current_player):
             break
         if move_input.lower() == "pass":
             player_1_turn = not player_1_turn
+            game.pass_count += 1
+            if game.pass_count > 1:
+                print("Both players pass")
             break
         valid_move = validate_move(move_input)
         if valid_move:
