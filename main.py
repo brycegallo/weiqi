@@ -6,6 +6,7 @@ class Game:
         self.boards = []
         self.winner = ''
         self.pass_count = 0
+        self.self_capture = False
 
 
 class Player:
