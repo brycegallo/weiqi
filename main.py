@@ -42,9 +42,10 @@ def play_game():
     global exit_game
     print("Welcome to Weiqi")
     print("enter 'exit' to quit at any time")
-    komi_on = input("Play with Komi? ")
-    if komi_on[0].lower() == "y":
-        player2.score += 6.5
+    # komi_on = input("Play with Komi? ")
+    # if komi_on[0].lower() == "y":
+    #     player2.score += 6.5
+    player2.score += 6.5 # undo above commenting after testing
     player1.name = 'player 1'
     player2.name = 'player 2'
     game.boards.append(copy.deepcopy(board))
@@ -78,14 +79,14 @@ def take_move_input(current_player):
             resign(current_player)
             exit_game = True
             break
-        move_row = move_input[0].upper()
-        move_col = int(move_input[1])
-        valid_move = validate_move(move_row, move_col)
+        valid_move = validate_move(move_input)
         if valid_move:
+            move_row = move_input[0].upper()
+            move_col = int(move_input[1])
             if player_1_turn:
-                piece = Piece('B', (row_alpha_dict.get(move_row), move_col))
+                piece = Piece('B', (row_alpha_dict.get(move_row), move_col - 1))
             else:
-                piece = Piece('W', (row_alpha_dict.get(move_row), move_col))
+                piece = Piece('W', (row_alpha_dict.get(move_row), move_col - 1))
             board[row_alpha_dict.get(move_row)][move_col - 1] = piece
             check_liberties(board)
             player_1_turn = not player_1_turn
@@ -95,7 +96,9 @@ def take_move_input(current_player):
             print("Invalid move")
 
 
-def validate_move(move_row, move_col):
+def validate_move(move_input):
+    move_row = move_input[0].upper()
+    move_col = int(move_input[1])
     print(move_row, move_col)
     if move_row not in row_alpha_dict:
         print('Invalid Row')
@@ -120,11 +123,13 @@ def check_liberties(board_input):
             if type(board[i][j]) is Piece:
                 piece = board[i][j]
                 coordinates = piece.coordinates
+                row = coordinates[0]
+                col = coordinates[1]
                 print("Coordinates: " + str(coordinates))
                 piece.liberties = 4
-                if coordinates[0] == 0 or coordinates[0] == 8:
+                if row == 0 or row == 8:
                     piece.liberties -= 1
-                if j == 0 or j == 8:
+                if col == 0 or col == 8:
                     board[i][j].liberties -= 1
                 if i > 0 and type(board[i - 1][j]) is Piece and board[i - 1][j].color != board[i][j].color:
                     board[i][j].liberties -= 1
@@ -156,10 +161,11 @@ def decide_winner():
     print("Player 1: " + str(player1.score))
     print("Player 2: " + str(player2.score))
     print(game.winner.name + " won")
-    recap = input("Show game recap?: ").lower()
-    if recap[0].lower() == "y":
-        for old_board in game.boards:
-            print_board(old_board)
+    # recap = input("Show game recap?: ").lower()
+    # if recap[0].lower() == "y":
+    #     for old_board in game.boards:
+    #         print_board(old_board)
+#     undo above commenting after testing
 
 
 if __name__ == '__main__':
