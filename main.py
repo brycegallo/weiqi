@@ -11,6 +11,7 @@ class Player:
     def __init__(self, name):
         self.name = name
         self.score = 0
+        self.resigned = False
 
 
 class Piece:
@@ -47,21 +48,11 @@ def play_game():
     player2.name = 'player 2'
     game.boards.append(copy.deepcopy(board))
     while not exit_game:
-        current_player = players[not player_1_turn].name
-        print(current_player + "'s turn")
+        current_player = players[not player_1_turn]
+        print(current_player.name + "'s turn")
         print_board(board)
         take_move_input(current_player)
-    if player1.score > player2.score:
-        game.winner = player1
-    else:
-        game.winner = player2
-    print(player1.score)
-    print(player2.score)
-    print(game.winner.name + " won")
-    recap = input("Show game recap?: ").lower()
-    if recap[0].lower() == "y":
-        for old_board in game.boards:
-            print_board(old_board)
+    decide_winner()
 
 
 def print_board(board_input):
@@ -118,7 +109,8 @@ def validate_move(move_row, move_col):
 
 
 def resign(current_player):
-    print(current_player + " has resigned")
+    print(current_player.name + " has resigned")
+    current_player.resigned = True
 
 
 def check_liberties(board_input):
@@ -139,10 +131,31 @@ def check_liberties(board_input):
                 if board[i][j + 1] and type(board[i][j + 1]) is Piece and board[i][j + 1].color != board[i][j].color:
                     board[i][j].liberties -= 1
                 if board[i][j].liberties < 1:
+                    if board[i][j].color == "B":
+                        player2.score += 1
+                    if board[i][j].color == "W":
+                        player1.score += 1
                     board[i][j] = ' '
 
     for i, row in enumerate(board_input):
         print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(0, 9)]))
+
+
+def decide_winner():
+    if player1.score > player2.score and not player1.resigned:
+        game.winner = player1
+    elif player2.resigned:
+        game.winner = player1
+    else:
+        game.winner = player2
+    print("Scores")
+    print("Player 1: " + str(player1.score))
+    print("Player 2: " + str(player2.score))
+    print(game.winner.name + " won")
+    recap = input("Show game recap?: ").lower()
+    if recap[0].lower() == "y":
+        for old_board in game.boards:
+            print_board(old_board)
 
 
 if __name__ == '__main__':
