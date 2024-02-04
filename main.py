@@ -15,9 +15,10 @@ class Player:
 
 
 class Piece:
-    def __init__(self, color):
+    def __init__(self, color, coordinates):
         self.color = color
         self.liberties = 4
+        self.coordinates = coordinates
 
     def __str__(self):
         return self.color
@@ -82,9 +83,9 @@ def take_move_input(current_player):
         valid_move = validate_move(move_row, move_col)
         if valid_move:
             if player_1_turn:
-                piece = Piece('B')
+                piece = Piece('B', (row_alpha_dict.get(move_row), move_col))
             else:
-                piece = Piece('W')
+                piece = Piece('W', (row_alpha_dict.get(move_row), move_col))
             board[row_alpha_dict.get(move_row)][move_col - 1] = piece
             check_liberties(board)
             player_1_turn = not player_1_turn
@@ -117,18 +118,21 @@ def check_liberties(board_input):
     for i in range(len(board_input)):
         for j in range(len(board_input[0])):
             if type(board[i][j]) is Piece:
-                board[i][j].liberties = 4
-                if i == 0 or i == 8:
-                    board[i][j].liberties -= 1
+                piece = board[i][j]
+                coordinates = piece.coordinates
+                print("Coordinates: " + str(coordinates))
+                piece.liberties = 4
+                if coordinates[0] == 0 or coordinates[0] == 8:
+                    piece.liberties -= 1
                 if j == 0 or j == 8:
                     board[i][j].liberties -= 1
-                if board[i - 1][j] and type(board[i - 1][j]) is Piece and board[i - 1][j].color != board[i][j].color:
+                if i > 0 and type(board[i - 1][j]) is Piece and board[i - 1][j].color != board[i][j].color:
                     board[i][j].liberties -= 1
-                if board[i + 1][j] and type(board[i + 1][j]) is Piece and board[i + 1][j].color != board[i][j].color:
+                if i < 8 and type(board[i + 1][j]) is Piece and board[i + 1][j].color != board[i][j].color:
                     board[i][j].liberties -= 1
-                if board[i][j - 1] and type(board[i][j - 1]) is Piece and board[i][j - 1].color != board[i][j].color:
+                if j > 0 and type(board[i][j - 1]) is Piece and board[i][j - 1].color != board[i][j].color:
                     board[i][j].liberties -= 1
-                if board[i][j + 1] and type(board[i][j + 1]) is Piece and board[i][j + 1].color != board[i][j].color:
+                if j < 8 and type(board[i][j + 1]) is Piece and board[i][j + 1].color != board[i][j].color:
                     board[i][j].liberties -= 1
                 if board[i][j].liberties < 1:
                     if board[i][j].color == "B":
