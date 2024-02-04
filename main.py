@@ -7,15 +7,17 @@ class Game:
         self.starting_board = [[' ' for i in range(self.board_size)] for j in range(self.board_size)]
         self.current_board = copy.deepcopy(self.starting_board)
         self.boards = [copy.deepcopy(self.current_board)]
-        self.players = []
+        self.players = [Player('Player 1'), Player('Player 2')]
         self.winner = ''
         self.pass_count = 0
         self.self_capture = False
-        self.komi_on = True # for testing, should default to False
+        self.komi_on = True # might be True for testing, should default to False
         self.komi = 0
-        self.player_1_turn = True
-        # self.current_player = self.players[0]
-        self.recap_on = True
+        # self.player_1_turn = True
+        self.turn = 0
+        self.current_player = self.players[0]
+        self.waiting_player = self.players[1]
+        self.recap_on = False # might be True for testing, should default to False
         self.end_game = False
 
 
@@ -73,18 +75,17 @@ def print_board(board_input):
         print(row_letters[i] + ' ' + str([str(row[j]) for j in range(len(row))]))
 
 
-def take_move_input(current_player):
-    global game
+def take_move_input(game):
     valid_move = False
     while not game.end_game and not valid_move:
         move_input = input('Enter Move: ')
         if move_input.lower() == "exit" or move_input.lower() == "resign":
             if move_input.lower() == "resign":
-                resign(current_player)
+                resign(game)
             game.end_game = True
             break
         if move_input.lower() == "pass":
-            game.player_1_turn = not game.player_1_turn
+            # swap_players(game)
             game.pass_count += 1
             if game.pass_count > 1:
                 print("Both players pass")
@@ -93,14 +94,13 @@ def take_move_input(current_player):
         if valid_move:
             move_row = move_input[0].upper()
             move_col = int(move_input[1]) - 1
-            if game.player_1_turn:
+            if game.current_player == game.players[0]:
                 piece = Piece('B', (row_alpha_dict.get(move_row), move_col))
             else:
                 piece = Piece('W', (row_alpha_dict.get(move_row), move_col))
             game.current_board[row_alpha_dict.get(move_row)][move_col] = piece
-            # check_liberties(game.current_board)
             check_liberties(game)
-            game.player_1_turn = not game.player_1_turn
+            # swap_players(game)
             # print("Valid move") # for testing
             game.boards.append(copy.deepcopy(game.current_board))
         else:
@@ -126,9 +126,13 @@ def validate_move(move_input):
     return True
 
 
-def resign(current_player):
-    print(current_player.name + " has resigned")
-    current_player.resigned = True
+def resign(game):
+    if game.current_player == game.players[0]:
+        game.players[0].resigned = True
+        print(game.players[0].name + " has resigned")
+    else:
+        game.players[1].resigned = True
+        print(game.players[1].name + " has resigned")
 
 
 def check_liberties(game):
@@ -162,7 +166,7 @@ def check_liberties(game):
                     if piece.color == "W":
                         game.players[0].score += 1
                     board[i][j] = ' '
-    # print_liberties(board_input) # for testing
+    # print_liberties(board) # for testing
 
 
 def decide_winner(game):
@@ -174,19 +178,19 @@ def decide_winner(game):
         game.winner = player1
     else:
         game.winner = player2
-    check_score(game.current_board)
+    check_game_score(game)
     print("Scores")
     print("Player 1: " + str(player1.score))
     print("Player 2: " + str(player2.score))
     print(game.winner.name + " won")
 
 
-def check_score(board_input):
-    global game
-    for i in range(len(board_input)):
-        for j in range(len(board_input[0])):
-            if type(game.current_board[i][j]) is Piece:
-                piece = game.current_board[i][j]
+def check_game_score(game):
+    board = game.current_board
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            if type(board[i][j]) is Piece:
+                piece = board[i][j]
                 color = piece.color
                 if color == "B":
                     game.players[0].score += 1
@@ -195,19 +199,19 @@ def check_score(board_input):
 
 
 def recap(game):
+    # recap_input = input("Show game recap?: ").lower()
+    # if recap_input[0].lower() == "y":
+    #     game.recap_on = True
     if game.recap_on:
         for old_board in game.boards:
             print_board(old_board)
-    # recap_input = input("Show game recap?: ").lower()
-    # if recap_input[0].lower() == "y":
-    #     for old_board in game.boards:
-    #         print_board(old_board)
 
 
 def choose_settings(game):
-    player1 = Player('player 1')
-    player2 = Player('player 2')
-    game.players = [player1, player2]
+    # game.current_player.name = input("Player 1 enter name")
+    # game.waiting_player.name = input("Player 2 enter name")
+    # uncomment above after testing
+
     # komi_input = input("Enter komi ")
     # if komi_input[0] == "0":
     #     game.komi_on = False
@@ -215,14 +219,20 @@ def choose_settings(game):
     #     game.komi = float(komi_input)
     #     player2.score += game.komi
     game.komi = 6.5 # for testing, remove and uncomment above, later
-    player2.score += game.komi
+    game.players[1].score += game.komi
 
 
 def next_turn(game):
-    current_player = game.players[not game.player_1_turn]
-    print(current_player.name + "'s turn")
+    if game.turn > 0:
+        swap_players(game)
+    game.turn += 1
+    print(game.current_player.name + "'s turn")
     print_board(game.current_board)
-    take_move_input(current_player)
+    take_move_input(game)
+
+
+def swap_players(game):
+    game.current_player, game.waiting_player = game.waiting_player, game.current_player
 
 
 def print_liberties(board_input):
