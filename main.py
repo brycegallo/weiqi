@@ -18,6 +18,8 @@ class Game:
         self.waiting_player = self.players[1]
         self.recap_on = False # can be True for testing, should default to False
         self.end_game = False
+        self.row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+        self.row_alpha_dict = dict((letter, i) for i, letter in enumerate(self.row_letters))
 
 
 class Player:
@@ -51,10 +53,6 @@ class Board:
         self.row_alpha_dict = dict((letter, i) for i, letter in enumerate(self.row_letters))
 
 
-row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
-row_alpha_dict = dict((letter, i) for i, letter in enumerate(row_letters))
-
-
 def play_game():
     game = Game()
     print("Welcome to Weiqi")
@@ -66,10 +64,11 @@ def play_game():
     recap(game)
 
 
-def print_board(board_input):
-    global row_letters
+def print_board(game):
+    board = game.current_board
+    row_letters = game.row_letters
     print('  [ 1    2    3    4    5    6    7    8    9 ]')
-    for i, row in enumerate(board_input):
+    for i, row in enumerate(board):
         print(row_letters[i] + ' ' + str([str(row[j]) for j in range(len(row))]))
 
 
@@ -89,14 +88,15 @@ def take_move_input(game):
             break
         valid_move = validate_move(game, move_input)
         if valid_move:
+            ra_dict = game.row_alpha_dict
             game.pass_count = 0
             move_row = move_input[0].upper()
             move_col = int(move_input[1]) - 1
             if game.current_player == game.players[0]:
-                piece = Piece('B', (row_alpha_dict.get(move_row), move_col))
+                piece = Piece('B', (ra_dict.get(move_row), move_col))
             else:
-                piece = Piece('W', (row_alpha_dict.get(move_row), move_col))
-            game.current_board[row_alpha_dict.get(move_row)][move_col] = piece
+                piece = Piece('W', (ra_dict.get(move_row), move_col))
+            game.current_board[ra_dict.get(move_row)][move_col] = piece
             check_game_liberties(game)
             # print("Valid move") # for testing
             game.boards.append(copy.deepcopy(game.current_board))
@@ -105,18 +105,19 @@ def take_move_input(game):
 
 
 def validate_move(game, move_input):
+    ra_dict = game.row_alpha_dict
     if len(move_input) != 2:
         return False
     if not move_input[1].isnumeric() or int(move_input[1]) not in range(0, 10):
         print('Invalid Column')
         return False
-    if not move_input[0].isalpha or move_input[0].upper() not in row_alpha_dict:
+    if not move_input[0].isalpha or move_input[0].upper() not in ra_dict:
         print('Invalid Row')
         return False
     move_row = move_input[0].upper()
     move_col = int(move_input[1])
     # print(move_row, move_col) # for testing
-    if game.current_board[row_alpha_dict.get(move_row)][move_col - 1] != ' ':
+    if game.current_board[ra_dict.get(move_row)][move_col - 1] != ' ':
         print('Space already taken')
         return False
     return True
@@ -164,7 +165,8 @@ def check_game_liberties(game):
                     board[i][j] = ' '
     # print_liberties(game)  # for testing
 
-def check_piece_liberties(game, piece):
+
+def check_group_liberties(game):
     pass
 
 
@@ -226,7 +228,7 @@ def next_turn(game):
         swap_players(game)
     game.turn += 1
     print(game.current_player.name + "'s turn")
-    print_board(game.current_board)
+    print_board(game)
     take_move_input(game)
 
 
@@ -236,8 +238,9 @@ def swap_players(game):
 
 def print_liberties(game):
     board = game.current_board
+    letters = game.row_letters
     for i, row in enumerate(board):
-        print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
+        print(letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
 
 
 # Board Analysis-Specific Functions
