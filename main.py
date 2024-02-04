@@ -14,6 +14,7 @@ class Game:
         self.komi_on = True # for testing, should default to False
         self.komi = 0
         self.player_1_turn = True
+        # self.current_player = self.players[0]
         self.recap_on = True
         self.end_game = False
 
@@ -42,12 +43,15 @@ class Group:
 
 
 class Board:
-    def __init__(self):
+    def __init__(self, size):
+        self.size = size
+        self.positions = []
         self.row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+        self.row_alpha_dict = dict((letter, i) for i, letter in enumerate(self.row_letters))
 
 
-row_alpha_dict = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6, "H": 7, "I": 8}
 row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+row_alpha_dict = dict((letter, i) for i, letter in enumerate(row_letters))
 
 
 def play_game():
@@ -74,11 +78,9 @@ def take_move_input(current_player):
     valid_move = False
     while not game.end_game and not valid_move:
         move_input = input('Enter Move: ')
-        if move_input.lower() == "exit":
-            game.end_game = True
-            break
-        if move_input.lower() == "resign":
-            resign(current_player)
+        if move_input.lower() == "exit" or move_input.lower() == "resign":
+            if move_input.lower() == "resign":
+                resign(current_player)
             game.end_game = True
             break
         if move_input.lower() == "pass":
@@ -227,6 +229,29 @@ def print_liberties(board_input):
     for i, row in enumerate(board_input):
         print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
 
+
+# Board Analysis-Specific Functions
+# def print_liberties(board_input):
+#     for i, row in enumerate(board_input):
+#         print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
+
+# def print_board(board_input):
+#     global row_letters
+#     print('  [ 1    2    3    4    5    6    7    8    9 ]')
+#     for i, row in enumerate(board_input):
+#         print(row_letters[i] + ' ' + str([str(row[j]) for j in range(len(row))]))
+
+# def check_score(board_input):
+#     global game
+#     for i in range(len(board_input)):
+#         for j in range(len(board_input[0])):
+#             if type(game.current_board[i][j]) is Piece:
+#                 piece = game.current_board[i][j]
+#                 color = piece.color
+#                 if color == "B":
+#                     game.players[0].score += 1
+#                 if color == "W":
+#                     game.players[1].score += 1
 
 if __name__ == '__main__':
     play_game()
