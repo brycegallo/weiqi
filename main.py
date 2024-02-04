@@ -11,13 +11,12 @@ class Game:
         self.winner = ''
         self.pass_count = 0
         self.self_capture = False
-        self.komi_on = True # might be True for testing, should default to False
+        self.komi_on = True # can be True for testing, should default to False
         self.komi = 0
-        # self.player_1_turn = True
         self.turn = 0
         self.current_player = self.players[0]
         self.waiting_player = self.players[1]
-        self.recap_on = False # might be True for testing, should default to False
+        self.recap_on = False # can be True for testing, should default to False
         self.end_game = False
 
 
@@ -57,7 +56,6 @@ row_alpha_dict = dict((letter, i) for i, letter in enumerate(row_letters))
 
 
 def play_game():
-    global game
     game = Game()
     print("Welcome to Weiqi")
     print("enter 'exit' to quit at any time")
@@ -89,7 +87,7 @@ def take_move_input(game):
             if game.pass_count > 1:
                 print("Both players pass")
             break
-        valid_move = validate_move(move_input)
+        valid_move = validate_move(game, move_input)
         if valid_move:
             game.pass_count = 0
             move_row = move_input[0].upper()
@@ -99,16 +97,14 @@ def take_move_input(game):
             else:
                 piece = Piece('W', (row_alpha_dict.get(move_row), move_col))
             game.current_board[row_alpha_dict.get(move_row)][move_col] = piece
-            check_liberties(game)
-            # swap_players(game)
+            check_game_liberties(game)
             # print("Valid move") # for testing
             game.boards.append(copy.deepcopy(game.current_board))
         else:
             print("Invalid move")
 
 
-def validate_move(move_input):
-    global game
+def validate_move(game, move_input):
     if len(move_input) != 2:
         return False
     if not move_input[1].isnumeric() or int(move_input[1]) not in range(0, 10):
@@ -135,7 +131,7 @@ def resign(game):
         print(game.players[1].name + " has resigned")
 
 
-def check_liberties(game):
+def check_game_liberties(game):
     board = game.current_board
     for i in range(len(board)):
         for j in range(len(board[0])):
@@ -166,7 +162,10 @@ def check_liberties(game):
                     if piece.color == "W":
                         game.players[0].score += 1
                     board[i][j] = ' '
-    print_liberties(game)  # for testing
+    # print_liberties(game)  # for testing
+
+def check_piece_liberties(game, piece):
+    pass
 
 
 def decide_winner(game):
