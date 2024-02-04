@@ -69,7 +69,7 @@ def print_board(board_input):
 
 def take_move_input(current_player):
     global game
-    global board
+    # global board
     global exit_game
     valid_move = False
     while not exit_game and not valid_move:
@@ -95,16 +95,20 @@ def take_move_input(current_player):
                 piece = Piece('B', (row_alpha_dict.get(move_row), move_col))
             else:
                 piece = Piece('W', (row_alpha_dict.get(move_row), move_col))
-            board[row_alpha_dict.get(move_row)][move_col] = piece
-            check_liberties(board)
+            # board[row_alpha_dict.get(move_row)][move_col] = piece
+            game.current_board[row_alpha_dict.get(move_row)][move_col] = piece
+            # check_liberties(board)
+            check_liberties(game.current_board)
             game.player_1_turn = not game.player_1_turn
             # print("Valid move") # for testing
-            game.boards.append(copy.deepcopy(board))
+            # game.boards.append(copy.deepcopy(board))
+            game.boards.append(copy.deepcopy(game.current_board))
         else:
             print("Invalid move")
 
 
 def validate_move(move_input):
+    global game
     if len(move_input) != 2:
         return False
     if not move_input[1].isnumeric() or int(move_input[1]) not in range(0, 10):
@@ -116,7 +120,8 @@ def validate_move(move_input):
     move_row = move_input[0].upper()
     move_col = int(move_input[1])
     # print(move_row, move_col) # for testing
-    if board[row_alpha_dict.get(move_row)][move_col - 1] != ' ':
+    # if board[row_alpha_dict.get(move_row)][move_col - 1] != ' ':
+    if game.current_board[row_alpha_dict.get(move_row)][move_col - 1] != ' ':
         print('Space already taken')
         return False
     return True
@@ -131,8 +136,8 @@ def check_liberties(board_input):
     global game
     for i in range(len(board_input)):
         for j in range(len(board_input[0])):
-            if type(board[i][j]) is Piece:
-                piece = board[i][j]
+            if type(game.current_board[i][j]) is Piece:
+                piece = game.current_board[i][j]
                 color = piece.color
                 coordinates = piece.coordinates
                 row = coordinates[0]
@@ -142,21 +147,21 @@ def check_liberties(board_input):
                 if row == 0 or row == 8:
                     piece.liberties -= 1
                 if col == 0 or col == 8:
-                    board[i][j].liberties -= 1
-                if i > 0 and type(board[i - 1][j]) is Piece and board[i - 1][j].color != color:
-                    board[i][j].liberties -= 1
-                if i < 8 and type(board[i + 1][j]) is Piece and board[i + 1][j].color != color:
-                    board[i][j].liberties -= 1
-                if j > 0 and type(board[i][j - 1]) is Piece and board[i][j - 1].color != color:
-                    board[i][j].liberties -= 1
-                if j < 8 and type(board[i][j + 1]) is Piece and board[i][j + 1].color != color:
-                    board[i][j].liberties -= 1
-                if board[i][j].liberties < 1:
-                    if board[i][j].color == "B":
+                    game.current_board[i][j].liberties -= 1
+                if i > 0 and type(game.current_board[i - 1][j]) is Piece and game.current_board[i - 1][j].color != color:
+                    game.current_board[i][j].liberties -= 1
+                if i < 8 and type(game.current_board[i + 1][j]) is Piece and game.current_board[i + 1][j].color != color:
+                    game.current_board[i][j].liberties -= 1
+                if j > 0 and type(game.current_board[i][j - 1]) is Piece and game.current_board[i][j - 1].color != color:
+                    game.current_board[i][j].liberties -= 1
+                if j < 8 and type(game.current_board[i][j + 1]) is Piece and game.current_board[i][j + 1].color != color:
+                    game.current_board[i][j].liberties -= 1
+                if game.current_board[i][j].liberties < 1:
+                    if game.current_board[i][j].color == "B":
                         game.players[1].score += 1
-                    if board[i][j].color == "W":
+                    if game.current_board[i][j].color == "W":
                         game.players[0].score += 1
-                    board[i][j] = ' '
+                    game.current_board[i][j] = ' '
     # print_liberties(board_input) # for testing
 
 
@@ -169,7 +174,7 @@ def decide_winner(game):
         game.winner = player1
     else:
         game.winner = player2
-    check_score(board)
+    check_score(game.current_board)
     print("Scores")
     print("Player 1: " + str(player1.score))
     print("Player 2: " + str(player2.score))
@@ -180,8 +185,8 @@ def check_score(board_input):
     global game
     for i in range(len(board_input)):
         for j in range(len(board_input[0])):
-            if type(board[i][j]) is Piece:
-                piece = board[i][j]
+            if type(game.current_board[i][j]) is Piece:
+                piece = game.current_board[i][j]
                 color = piece.color
                 if color == "B":
                     game.players[0].score += 1
@@ -214,7 +219,7 @@ def choose_settings(game):
 def next_turn(game):
     current_player = game.players[not game.player_1_turn]
     print(current_player.name + "'s turn")
-    print_board(board)
+    print_board(game.current_board)
     take_move_input(current_player)
 
 
