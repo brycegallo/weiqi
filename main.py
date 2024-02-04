@@ -159,6 +159,7 @@ def decide_winner():
         game.winner = player1
     else:
         game.winner = player2
+    check_score(board)
     print("Scores")
     print("Player 1: " + str(player1.score))
     print("Player 2: " + str(player2.score))
@@ -168,6 +169,18 @@ def decide_winner():
     #     for old_board in game.boards:
     #         print_board(old_board)
 #     undo above commenting after testing
+
+def check_score(board_input):
+    for i in range(len(board_input)):
+        for j in range(len(board_input[0])):
+            if type(board[i][j]) is Piece:
+                piece = board[i][j]
+                color = piece.color
+                if color == "B":
+                    player1.score += 1
+                if color == "W":
+                    player2.score += 1
+
 
 
 if __name__ == '__main__':
