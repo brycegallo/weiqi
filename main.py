@@ -11,10 +11,11 @@ class Game:
         self.winner = ''
         self.pass_count = 0
         self.self_capture = False
-        self.komi_on = False
+        self.komi_on = True # for testing, should default to False
         self.komi = 0
         self.player_1_turn = True
         self.recap_on = True
+        self.end_game = False
 
 
 class Player:
@@ -40,21 +41,22 @@ class Group:
         self.liberties = 4
 
 
+class Board:
+    def __init__(self):
+        self.row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+
+
 row_alpha_dict = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6, "H": 7, "I": 8}
 row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
-board = [[' ' for i in range(9)] for j in range(9)]
-exit_game = False
 
 
 def play_game():
     global game
     game = Game()
-    global exit_game
     print("Welcome to Weiqi")
     print("enter 'exit' to quit at any time")
     choose_settings(game)
-    # game.boards.append(copy.deepcopy(board))
-    while not exit_game and game.pass_count < 2:
+    while not game.end_game and game.pass_count < 2:
         next_turn(game)
     decide_winner(game)
     recap(game)
@@ -69,17 +71,15 @@ def print_board(board_input):
 
 def take_move_input(current_player):
     global game
-    # global board
-    global exit_game
     valid_move = False
-    while not exit_game and not valid_move:
+    while not game.end_game and not valid_move:
         move_input = input('Enter Move: ')
         if move_input.lower() == "exit":
-            exit_game = True
+            game.end_game = True
             break
         if move_input.lower() == "resign":
             resign(current_player)
-            exit_game = True
+            game.end_game = True
             break
         if move_input.lower() == "pass":
             game.player_1_turn = not game.player_1_turn
@@ -95,13 +95,11 @@ def take_move_input(current_player):
                 piece = Piece('B', (row_alpha_dict.get(move_row), move_col))
             else:
                 piece = Piece('W', (row_alpha_dict.get(move_row), move_col))
-            # board[row_alpha_dict.get(move_row)][move_col] = piece
             game.current_board[row_alpha_dict.get(move_row)][move_col] = piece
-            # check_liberties(board)
-            check_liberties(game.current_board)
+            # check_liberties(game.current_board)
+            check_liberties(game)
             game.player_1_turn = not game.player_1_turn
             # print("Valid move") # for testing
-            # game.boards.append(copy.deepcopy(board))
             game.boards.append(copy.deepcopy(game.current_board))
         else:
             print("Invalid move")
@@ -120,7 +118,6 @@ def validate_move(move_input):
     move_row = move_input[0].upper()
     move_col = int(move_input[1])
     # print(move_row, move_col) # for testing
-    # if board[row_alpha_dict.get(move_row)][move_col - 1] != ' ':
     if game.current_board[row_alpha_dict.get(move_row)][move_col - 1] != ' ':
         print('Space already taken')
         return False
@@ -132,10 +129,10 @@ def resign(current_player):
     current_player.resigned = True
 
 
-def check_liberties(board_input):
-    global game
-    for i in range(len(board_input)):
-        for j in range(len(board_input[0])):
+def check_liberties(game):
+    board = game.current_board
+    for i in range(len(board)):
+        for j in range(len(board[0])):
             if type(game.current_board[i][j]) is Piece:
                 piece = game.current_board[i][j]
                 color = piece.color
@@ -208,12 +205,14 @@ def choose_settings(game):
     player1 = Player('player 1')
     player2 = Player('player 2')
     game.players = [player1, player2]
-    komi_input = input("Enter komi ")
-    if komi_input[0] == "0":
-        game.komi_on = False
-    else:
-        game.komi = float(komi_input)
-        player2.score += game.komi
+    # komi_input = input("Enter komi ")
+    # if komi_input[0] == "0":
+    #     game.komi_on = False
+    # else:
+    #     game.komi = float(komi_input)
+    #     player2.score += game.komi
+    game.komi = 6.5 # for testing, remove and uncomment above, later
+    player2.score += game.komi
 
 
 def next_turn(game):
@@ -225,7 +224,7 @@ def next_turn(game):
 
 def print_liberties(board_input):
     for i, row in enumerate(board_input):
-        print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(0, 9)]))
+        print(row_letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
 
 
 if __name__ == '__main__':
