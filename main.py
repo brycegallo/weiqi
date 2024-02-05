@@ -1,5 +1,10 @@
 import copy
+import re
 
+
+class GameEngine:
+    def __init__(self):
+        self.game = Game()
 
 class Game:
     def __init__(self):
@@ -43,6 +48,7 @@ class Group:
     def __init__(self):
         self.pieces = []
         self.liberties = 4
+        self.eyes = 0
 
 
 class Board:
@@ -64,12 +70,56 @@ def play_game():
     recap(game)
 
 
+def recap(game):
+    # recap_input = input("Show game recap?: ").lower()
+    # if recap_input[0].lower() == "y":
+    #     game.recap_on = True
+    if game.recap_on:
+        for old_board in game.boards:
+            print_board(old_board)
+
+
+def resign(game):
+    if game.current_player == game.players[0]:
+        game.players[0].resigned = True
+        print(game.players[0].name + " has resigned")
+    else:
+        game.players[1].resigned = True
+        print(game.players[1].name + " has resigned")
+
+
+def next_turn(game):
+    if game.turn > 0:
+        swap_players(game)
+    game.turn += 1
+    print(game.current_player.name + "'s turn")
+    print_board(game)
+    take_move_input(game)
+
+
+def swap_players(game):
+    game.current_player, game.waiting_player = game.waiting_player, game.current_player
+
+
 def print_board(game):
     board = game.current_board
     row_letters = game.row_letters
-    print('  [ 1    2    3    4    5    6    7    8    9 ]')
+    print(
+        re.sub("]", " ",
+               re.sub("'", " ", str('  ' +
+                                    re.sub(",", " ",
+                                           str([str(i) for i in range(1, game.board_size)]))))) + '  ' +
+        str(game.board_size) + ' ]')
+    # print('  [ 1    2    3    4    5    6    7    8    9 ]')
     for i, row in enumerate(board):
         print(row_letters[i] + ' ' + str([str(row[j]) for j in range(len(row))]))
+
+
+def print_liberties(game):
+    board = game.current_board
+    letters = game.row_letters
+    for i, row in enumerate(board):
+        print(letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
 
 
 def take_move_input(game):
@@ -123,15 +173,6 @@ def validate_move(game, move_input):
     return True
 
 
-def resign(game):
-    if game.current_player == game.players[0]:
-        game.players[0].resigned = True
-        print(game.players[0].name + " has resigned")
-    else:
-        game.players[1].resigned = True
-        print(game.players[1].name + " has resigned")
-
-
 def check_game_liberties(game):
     board = game.current_board
     for i in range(len(board)):
@@ -166,8 +207,28 @@ def check_game_liberties(game):
     # print_liberties(game)  # for testing
 
 
-def check_group_liberties(game):
+def count_groups(game):
+    board = game.current_board
+    rows = len(board)
+    cols = len(board[0])
+    groups_surrounded = 0
+    groups_w_liberties = 0
+    visited = set()
+    for row in range(rows):
+        for column in range(cols):
+            if board[row][column] == 'B' and (row, column) not in visited:
+                breadth_first_search(game, row, column)
+                groups_w_liberties += 1
+
+
+def breadth_first_search(game, row, column):
+    board = game.current_board
     pass
+
+
+def remove_group(group):
+    for piece in group:
+        pass
 
 
 def decide_winner(game):
@@ -199,15 +260,6 @@ def check_game_score(game):
                     game.players[1].score += 1
 
 
-def recap(game):
-    # recap_input = input("Show game recap?: ").lower()
-    # if recap_input[0].lower() == "y":
-    #     game.recap_on = True
-    if game.recap_on:
-        for old_board in game.boards:
-            print_board(old_board)
-
-
 def choose_settings(game):
     # game.current_player.name = input("Player 1 enter name")
     # game.waiting_player.name = input("Player 2 enter name")
@@ -221,26 +273,6 @@ def choose_settings(game):
     #     player2.score += game.komi
     game.komi = 6.5 # for testing, remove and uncomment above, later
     game.players[1].score += game.komi
-
-
-def next_turn(game):
-    if game.turn > 0:
-        swap_players(game)
-    game.turn += 1
-    print(game.current_player.name + "'s turn")
-    print_board(game)
-    take_move_input(game)
-
-
-def swap_players(game):
-    game.current_player, game.waiting_player = game.waiting_player, game.current_player
-
-
-def print_liberties(game):
-    board = game.current_board
-    letters = game.row_letters
-    for i, row in enumerate(board):
-        print(letters[i] + ' ' + str([str(row[j].liberties) if type(row[j]) is Piece else str(row[j]) for j in range(9)]))
 
 
 # Board Analysis-Specific Functions
