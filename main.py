@@ -203,26 +203,38 @@ class GameEngine:
                         board[i][j] = ' '
         self.print_liberties()  # for testing
 
-    def count_groups(self):
+    def count_all_groups(self):
         board = self.game.current_board
-        rows = len(board)
-        cols = len(board[0])
+        rows, cols = len(board), len(board[0])
+        visited = set()
         groups = 0
         groups_surrounded = 0
         groups_w_liberties = 0
-        visited = set()
 
-        def breadth_first_search(r, c):
+        def breadth_first_search(input_r, input_c):
             dqueue = collections.deque()
-            visited.add((r, c))
-            dqueue.append((r, c))
-            return groups
+            visited.add((input_r, input_c))
+            dqueue.append((input_r, input_c))
+
+            while dqueue:
+                q_r, q_c = dqueue.popleft()
+                directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+                for d_r, d_c in directions:
+                    r, c = q_r + d_r, q_c + d_c
+                    if (r in range(rows) and
+                        c in range(cols) and
+                        board[r][c] == "B" and
+                            (r, c) not in visited):
+                        dqueue.append((r, c))
+                        visited.add((r, c))
 
         for row in range(rows):
             for column in range(cols):
                 if board[row][column] == 'B' and (row, column) not in visited:
                     breadth_first_search(row, column)
                     groups += 1
+        return groups
 
     def remove_group(self):
         for piece in self.group:
