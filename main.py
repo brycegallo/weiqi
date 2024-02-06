@@ -1,3 +1,4 @@
+import collections
 import copy
 import re
 
@@ -8,8 +9,10 @@ class GameEngine:
 
     class Game:
         def __init__(self):
+            self.settings = GameEngine.Settings()
+            self.game_board = GameEngine.Board(self.settings.board_size)
             self.board_size = 9
-            self.starting_board = [[' ' for i in range(self.board_size)] for j in range(self.board_size)]
+            self.starting_board = [[' ' for i in range(self.settings.board_size)] for j in range(self.settings.board_size)]
             self.current_board = copy.deepcopy(self.starting_board)
             self.boards = [copy.deepcopy(self.current_board)]
             self.players = [GameEngine.Player('Player 1'), GameEngine.Player('Player 2')]
@@ -48,14 +51,22 @@ class GameEngine:
             self.eyes = 0
 
     class Board:
-        def __init__(self, size):
+        def __init__(self, size=9):
             self.size = size
-            self.positions = []
-            self.row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+            self.initial_state = [[' ' for i in range(self.size)] for j in range(self.size)]
+            self.current_state = copy.deepcopy(self.initial_state)
+            self.letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+            self.row_letters = self.letters[:self.size]
             self.row_alpha_dict = dict((letter, i) for i, letter in enumerate(self.row_letters))
 
+    class Settings:
+        def __init__(self):
+            self.board_size = 9
+            self.self_capture = False
+            self.komi_on = True  # can be True for testing, should default to False
+            self.recap_on = False  # can be True for testing, should default to False
+
     def play_game(self):
-        # game = Game()
         print("Welcome to Weiqi")
         print("enter 'exit' to quit at any time")
         self.choose_settings()
@@ -94,13 +105,13 @@ class GameEngine:
     def print_board(self):
         board = self.game.current_board
         row_letters = self.game.row_letters
-        print(
-            re.sub("]", " ",
-                   re.sub("'", " ", str('  ' +
-                                        re.sub(",", " ",
-                                               str([str(i) for i in range(1, self.game.board_size)]))))) + '  ' +
-            str(self.game.board_size) + ' ]')
-        # print('  [ 1    2    3    4    5    6    7    8    9 ]')
+        # print(
+        #     re.sub("]", " ",
+        #            re.sub("'", " ", str('  ' +
+        #                                 re.sub(",", " ",
+        #                                        str([str(i) for i in range(1, self.game.board_size)]))))) + '  ' +
+        #     str(self.game.board_size) + ' ]')
+        print('  [ 1    2    3    4    5    6    7    8    9 ]')
         for i, row in enumerate(board):
             print(row_letters[i] + ' ' + str([str(row[j]) for j in range(len(row))]))
 
@@ -196,18 +207,22 @@ class GameEngine:
         board = self.game.current_board
         rows = len(board)
         cols = len(board[0])
+        groups = 0
         groups_surrounded = 0
         groups_w_liberties = 0
         visited = set()
+
+        def breadth_first_search(r, c):
+            dqueue = collections.deque()
+            visited.add((r, c))
+            dqueue.append((r, c))
+            return groups
+
         for row in range(rows):
             for column in range(cols):
                 if board[row][column] == 'B' and (row, column) not in visited:
-                    self.breadth_first_search(row, column)
-                    groups_w_liberties += 1
-
-    def breadth_first_search(self, row, column):
-        board = self.game.current_board
-        pass
+                    breadth_first_search(row, column)
+                    groups += 1
 
     def remove_group(self):
         for piece in self.group:
