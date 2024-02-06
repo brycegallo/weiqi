@@ -201,13 +201,15 @@ class GameEngine:
                         if piece.color == "W":
                             self.game.players[0].score += 1
                         board[i][j] = ' '
-        self.print_liberties()  # for testing
+        # self.print_liberties()  # for testing
+        print("groups: " + str(self.count_all_groups()))
 
     def count_all_groups(self):
         board = self.game.current_board
         rows, cols = len(board), len(board[0])
         visited = set()
         groups = 0
+        groups_list = []
         groups_surrounded = 0
         groups_w_liberties = 0
 
@@ -224,14 +226,17 @@ class GameEngine:
                     r, c = q_r + d_r, q_c + d_c
                     if (r in range(rows) and
                         c in range(cols) and
-                        board[r][c] == "B" and
+                        # board[r][c] == "B" and
+                        type(board[r][c]) is GameEngine.Piece and
                             (r, c) not in visited):
                         dqueue.append((r, c))
                         visited.add((r, c))
 
         for row in range(rows):
             for column in range(cols):
-                if board[row][column] == 'B' and (row, column) not in visited:
+                # if board[row][column] == "B" and (row, column) not in visited:
+                if (type(board[row][column]) is GameEngine.Piece and
+                        (row, column) not in visited):
                     breadth_first_search(row, column)
                     groups += 1
         return groups
