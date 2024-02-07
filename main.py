@@ -208,12 +208,19 @@ class GameEngine:
         board = self.game.current_board
         rows, cols = len(board), len(board[0])
         visited = set()
+        colors = ["W", "B"]
         groups = 0
         groups_list = []
+        black_groups = 0
+        black_groups_set = set()
+        black_groups_list = []
+        white_groups = 0
+        white_groups_set = set()
+        white_groups_list = []
         groups_surrounded = 0
         groups_w_liberties = 0
 
-        def breadth_first_search(input_r, input_c):
+        def breadth_first_search(input_r, input_c, group_color):
             dqueue = collections.deque()
             visited.add((input_r, input_c))
             dqueue.append((input_r, input_c))
@@ -226,20 +233,33 @@ class GameEngine:
                     r, c = q_r + d_r, q_c + d_c
                     if (r in range(rows) and
                         c in range(cols) and
-                        # board[r][c] == "B" and
                         type(board[r][c]) is GameEngine.Piece and
+                            board[r][c].color == group_color and
                             (r, c) not in visited):
                         dqueue.append((r, c))
                         visited.add((r, c))
 
-        for row in range(rows):
-            for column in range(cols):
-                # if board[row][column] == "B" and (row, column) not in visited:
-                if (type(board[row][column]) is GameEngine.Piece and
-                        (row, column) not in visited):
-                    breadth_first_search(row, column)
-                    groups += 1
-        return groups
+        for group_color in colors:
+            for row in range(rows):
+                for column in range(cols):
+                    if (type(board[row][column]) is GameEngine.Piece and
+                            board[row][column].color == group_color and
+                            (row, column) not in visited):
+                        breadth_first_search(row, column, group_color)
+                        if group_color == "B":
+                            black_groups += 1
+                            if ("B", (row, column)) not in black_groups_set:
+                                black_groups_list.append(("B", (row, column)))
+                        if group_color == "W":
+                            white_groups += 1
+                            if ("W", (row, column)) not in white_groups_set:
+                                white_groups_list.append(("W", (row, column)))
+        groups_list.append(black_groups_list)
+        groups_list.append(white_groups_list)
+        print("Black pieces: " + str(black_groups_list))
+        print("White pieces: " + str(white_groups_list))
+        print("Groups: " + str(len(groups_list)))
+        return groups_list
 
     def remove_group(self):
         for piece in self.group:
