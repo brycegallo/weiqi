@@ -15,7 +15,7 @@ class GameEngine:
             self.starting_board = [[' ' for i in range(self.settings.board_size)] for j in range(self.settings.board_size)]
             self.current_board = copy.deepcopy(self.starting_board)
             self.boards = [copy.deepcopy(self.current_board)]
-            self.players = [GameEngine.Player('Player 1'), GameEngine.Player('Player 2')]
+            self.players = [GameEngine.Player('Player 1', "B"), GameEngine.Player('Player 2', "W")]
             self.winner = ''
             self.pass_count = 0
             self.self_capture = False
@@ -30,8 +30,9 @@ class GameEngine:
             self.row_alpha_dict = dict((letter, i) for i, letter in enumerate(self.row_letters))
 
     class Player:
-        def __init__(self, name):
+        def __init__(self, name, color):
             self.name = name
+            self.color = color
             self.score = 0
             self.resigned = False
 
@@ -208,9 +209,10 @@ class GameEngine:
         board = self.game.current_board
         rows, cols = len(board), len(board[0])
         visited = set()
-        colors = ["W", "B"]
+        colors = [self.game.current_player.color, self.game.waiting_player.color]
         groups = 0
         groups_list = []
+        all_pieces = set()
         black_groups = 0
         black_groups_set = set()
         black_groups_list = []
@@ -224,6 +226,14 @@ class GameEngine:
             dqueue = collections.deque()
             visited.add((input_r, input_c))
             dqueue.append((input_r, input_c))
+            black_set = set()
+            white_set = set()
+            if board[input_r][input_c].color == "B" and (board[input_r][input_c].color, input_r, input_c) not in black_set:
+                print("added black to group")
+                black_set.add((group_color, input_r, input_c))
+            if board[input_r][input_c].color == "W" and (board[input_r][input_c].color, input_r, input_c) not in white_set:
+                print("added white to group")
+                white_set.add((group_color, input_r, input_c))
 
             while dqueue:
                 q_r, q_c = dqueue.popleft()
@@ -236,8 +246,18 @@ class GameEngine:
                         type(board[r][c]) is GameEngine.Piece and
                             board[r][c].color == group_color and
                             (r, c) not in visited):
+                        print("r in rows, c in cols, type is piece, coordinate not visited")
+                        if board[r][c].color == "B" and (board[r][c].color, r, c) not in black_set:
+                            print("added")
+                            black_set.add((group_color, r, c))
+                        if board[r][c].color == "W" and (board[r][c].color, r, c) not in white_set:
+                            white_set.add((group_color, r, c))
                         dqueue.append((r, c))
                         visited.add((r, c))
+                if black_set:
+                    black_groups_list.append(black_set)
+                if white_set:
+                    white_groups_list.append(white_set)
 
         for group_color in colors:
             for row in range(rows):
@@ -248,17 +268,17 @@ class GameEngine:
                         breadth_first_search(row, column, group_color)
                         if group_color == "B":
                             black_groups += 1
-                            if ("B", (row, column)) not in black_groups_set:
-                                black_groups_list.append(("B", (row, column)))
                         if group_color == "W":
                             white_groups += 1
-                            if ("W", (row, column)) not in white_groups_set:
-                                white_groups_list.append(("W", (row, column)))
-        groups_list.append(black_groups_list)
-        groups_list.append(white_groups_list)
-        print("Black pieces: " + str(black_groups_list))
-        print("White pieces: " + str(white_groups_list))
-        print("Groups: " + str(len(groups_list)))
+        print("Total Groups: " + str(white_groups + black_groups))
+        print("White groups: ", white_groups)
+        print("Black groups: ", black_groups)
+        print(black_groups_list)
+        print(white_groups_list)
+        # for piece in black_set:
+        #     arr = [piece[0], piece[1], piece[2]]
+        #     print(arr)
+
         return groups_list
 
     def remove_group(self):
