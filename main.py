@@ -226,6 +226,7 @@ class GameEngine:
             dqueue = collections.deque()
             visited.add((input_r, input_c))
             dqueue.append((input_r, input_c))
+
             black_set = set()
             white_set = set()
             if board[input_r][input_c].color == "B" and (board[input_r][input_c].color, input_r, input_c) not in black_set:
@@ -235,12 +236,16 @@ class GameEngine:
                 print("added white to group")
                 white_set.add((group_color, input_r, input_c))
 
+
             while dqueue:
+                group_liberties = 0
                 q_r, q_c = dqueue.popleft()
                 directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
                 for d_r, d_c in directions:
                     r, c = q_r + d_r, q_c + d_c
+                    if r in range(rows) and c in range(cols) and board[input_r][input_c] is not GameEngine.Piece:
+                        group_liberties += 1
                     if (r in range(rows) and
                         c in range(cols) and
                         type(board[r][c]) is GameEngine.Piece and
@@ -255,9 +260,9 @@ class GameEngine:
                         dqueue.append((r, c))
                         visited.add((r, c))
                 if black_set:
-                    black_groups_list.append(black_set)
+                    black_groups_list.append((black_set, group_liberties))
                 if white_set:
-                    white_groups_list.append(white_set)
+                    white_groups_list.append((white_set, group_liberties))
 
         for group_color in colors:
             for row in range(rows):
