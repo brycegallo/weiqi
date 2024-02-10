@@ -215,27 +215,34 @@ class GameEngine:
         all_pieces = set()
         black_groups = 0
         black_groups_set = set()
-        black_groups_list = []
         white_groups = 0
         white_groups_set = set()
-        white_groups_list = []
         groups_surrounded = 0
         groups_w_liberties = 0
+        black_groups_list = []
+        white_groups_list = []
 
         def breadth_first_search(input_r, input_c, group_color):
             dqueue = collections.deque()
             visited.add((input_r, input_c))
             dqueue.append((input_r, input_c))
 
-            black_set = set()
-            white_set = set()
+            # create sets to hold every piece in each group
+            black_set = set()  # Scope: breadth_first_search()
+            black_set_list = []
+            white_set = set()  # Scope: breadth_first_search()
+            # adds first coordinate to set if it's a piece, before entering deque
             if board[input_r][input_c].color == "B" and (board[input_r][input_c].color, input_r, input_c) not in black_set:
                 print("added black to group")
                 black_set.add((group_color, input_r, input_c))
             if board[input_r][input_c].color == "W" and (board[input_r][input_c].color, input_r, input_c) not in white_set:
                 print("added white to group")
                 white_set.add((group_color, input_r, input_c))
-
+            print("before if statement")
+            print(black_set_list)
+            if board[input_r][input_c].color == "B" and (board[input_r][input_c].color, input_r, input_c) not in black_set_list:
+                print("not in")
+                black_set_list.append((group_color, input_r, input_c))
 
             while dqueue:
                 group_liberties = 0
@@ -253,16 +260,27 @@ class GameEngine:
                             (r, c) not in visited):
                         print("r in rows, c in cols, type is piece, coordinate not visited")
                         if board[r][c].color == "B" and (board[r][c].color, r, c) not in black_set:
-                            print("added")
                             black_set.add((group_color, r, c))
+                        print("before if statement")
+                        print(black_set_list)
+                        if board[r][c].color == "B" and (board[r][c].color, r, c) not in black_set_list:
+                            print("not in")
+                            black_set_list.append((group_color, r, c))
                         if board[r][c].color == "W" and (board[r][c].color, r, c) not in white_set:
                             white_set.add((group_color, r, c))
                         dqueue.append((r, c))
                         visited.add((r, c))
-                if black_set:
-                    black_groups_list.append((black_set, group_liberties))
-                if white_set:
-                    white_groups_list.append((white_set, group_liberties))
+            if black_set_list:
+                print("black set list")
+                print(black_set_list)
+            if black_set:
+                # black_groups_list.append((black_set, group_liberties))
+                black_groups_list.append(black_set)
+            if white_set:
+                # white_groups_list.append((white_set, group_liberties))
+                white_groups_list.append(white_set)
+
+            # def liberty_breadth_first_search():
 
         for group_color in colors:
             for row in range(rows):
